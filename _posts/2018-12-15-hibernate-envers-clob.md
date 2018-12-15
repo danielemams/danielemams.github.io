@@ -20,7 +20,6 @@ Parto dicendo che la mia situazione a livello di database era di una tabella con
 <img src="/img/mams.png"/>
 
 Di seguito lo script sql:
-
 {% highlight sql %}
 --------------------------------------------------------
 --  mytable
@@ -38,7 +37,6 @@ primary key(mytable_k) using index;
 {% endhighlight %}
 
 A livello di JPA, la relativa Entity era la seguente:
-
 {% highlight java %}
 @Entity
 @Table(name = "MYTABLE")
@@ -75,7 +73,6 @@ public class MyTable implements Serializable {
 Il problema di un' Entity del genere, è che quando si fetcha l' Entity, viene fetchato sempre anche il CLOB. Cosa che vogliamo evitare.
 
 Proviamo con una prima soluzione, che spiegero' successivamente perche' non funzionante. Il field CLOB lo mappiamo in questo modo:
-
 {% highlight java %}
 @Basic(fetch = FetchType.LAZY)
 @Lob
@@ -98,7 +95,6 @@ Praticamente creo una tabella secondaria (chiamata Extended), dove ci mettero' i
 <img src="/img/extended.png"/>
 
 Di seguito lo script sql:
-
 {% highlight sql %}
 --------------------------------------------------------
 --  mytable
@@ -135,7 +131,6 @@ references mytable(mytable_k);
 E queste le 2 relative Entity:
 
 MyTable:
-
 {% highlight java %}
 @Entity
 @Table(name = "MYTABLE")
@@ -158,7 +153,6 @@ public class MyTable implements Serializable {
 {% endhighlight %}
 
 MyTableExtended:
-
 {% highlight java %}
 @Entity
 @Table(name = "MYTABLE_EXTENDED")
@@ -215,7 +209,6 @@ Ogni record di audit è identificato da un REV number: quando aggiorno entrambe 
 A questo punto ho esposto un API che, preso in ingresso un id di myTable, ritorna tutte le revisioni di quell' id, e per ogni revisione, ci aggancia la myTableExtended relativa a quella revisione.
 
 Prima di tutto ho introdotto un' interfaccia:
-
 {% highlight java %}
 public interface IEntityWithExtended<T> {
     T getEntityExtended();
@@ -224,7 +217,6 @@ public interface IEntityWithExtended<T> {
 {% endhighlight %}
 
 A questo punto ho fatto implementare tale interfaccia da MyTable, inserendo in questa Entity un field @Transient:
-
 {% highlight java %}
 public class MyTable implements Serializable, IEntityWithExtended<MyTableExtended> {
    ...
@@ -248,7 +240,6 @@ Fatto questo, ora l' obbiettivo è quello di chiamare un metodo che ritorna tutt
 Qui di seguito i metodi che mi sono scritto:
 
 allRevisionMap():
-
 {% highlight java %}
 public final Map<Integer, E> allRevisionMap(final long id) {
     final AuditReader reader = AuditReaderFactory.get(getEntityManager());
@@ -260,7 +251,6 @@ public final Map<Integer, E> allRevisionMap(final long id) {
 {% endhighlight %}
 
 getRevisionMap():
-
 {% highlight java %}
 private Map<Integer, E> getRevisionMap(final List<Object[]> input) {
     return Optional.ofNullable(input)
@@ -272,7 +262,6 @@ private Map<Integer, E> getRevisionMap(final List<Object[]> input) {
 Dove UserRevEntity è l' entity che mappa la tabella di Hibernate Envers. che contiene il REV Number di tutte le revisioni
 
 findExtendedRevNumber():
-
 {% highlight java %}
 private Optional<Integer> findExtendedRevNumber(final Integer number, final Set<Integer> domain) {
     return domain.stream().filter(n -> n <= number).max(Comparator.naturalOrder());
@@ -280,7 +269,6 @@ private Optional<Integer> findExtendedRevNumber(final Integer number, final Set<
 {% endhighlight %}
 
 mergeRevisionMap():
-
 {% highlight java %}
 public <EXT, T extends IEntityWithExtended<EXT>> List<T> mergeRevisionMap(
 final Map<Integer, T> entityMap,
@@ -294,7 +282,6 @@ final Map<Integer, EXT> entityExtendedMap) {
 {% endhighlight %}
 
 A questo punto, dal Service basta fare:
-
 {% highlight java %}
 final Map<Integer, MyTable> myTableRevisionMap = allRevisionMap(id);
 final Map<Integer, MyTableExtended> myTableExtendedRevisionMap = allRevisionMap(id);

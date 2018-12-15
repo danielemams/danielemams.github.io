@@ -21,28 +21,24 @@ Dopodichè scaricare lo script <a href="https://github.com/danielemams/oracle12c
 
 Dopo aver fatto cio:
 
-1. scompattare i due src.zip uno sopra l' altro
-
+- scompattare i due src.zip uno sopra l' altro
 {% highlight shell %}
 mams@debian:~$ mkdir oracle12c
 mams@debian:~$ unzip linuxamd64_12102_database_1of2.zip -d oracle12c
 mams@debian:~$ unzip linuxamd64_12102_database_2of2.zip -d oracle12c
 {% endhighlight %}
 
-2. copia install.sh nella directory scompattata
-
+- copia install.sh nella directory scompattata
 {% highlight shell %}
 mams@debian:~$ cp install.sh oracle12c
 {% endhighlight %}
 
-3. esegui install.sh
-
+- esegui install.sh
 {% highlight shell %}
 mams@debian:~$ ./install.sh
 {% endhighlight %}
 
-4. eseguire il seguente comando
-
+- eseguire il seguente comando
 {% highlight shell %}
 mams@debian:~$ sudo chmod a+x $ORACLE_HOME/bin/sqlplus && sudo ln -s $ORACLE_HOME/bin/sqlplus /usr/local/bin/ 2> /dev/null
 {% endhighlight %}
@@ -65,19 +61,17 @@ Su RHEL (supportata da Oracle) /bin/sh è un symlink a /bin/bash, mentre in debi
 
 Quindi le 3 soluzioni sono:
 
-1. o si reimposta a livello globale il symlink di sh a bash (soluzione preferibile tra le 3), tramite:
-
+- o si reimposta a livello globale il symlink di sh a bash (soluzione preferibile tra le 3), tramite:
 {% highlight shell %}
 mams@debian:~$ sudo dpkg-reconfigure dash
 {% endhighlight %}
 
-2. o quando vogliamo avviare oracle_start.sh (ma cosi rischiamo che altri script lanciati, se esistono, non vadano sotto bash):
-
+- o quando vogliamo avviare oracle_start.sh (ma cosi rischiamo che altri script lanciati, se esistono, non vadano sotto bash):
 {% highlight shell %}
 mams@debian:~$ bash /usr/local/bin/oraenv
 {% endhighlight %}
 
-3. o, come gia detto sopra, si modifica lo script /usr/local/bin/oraenv alla riga 225 (ma anche qui risolveremo il singlo script, e non eventuali altri lanciati a catena, se esistono) da:
+- o, come gia detto sopra, si modifica lo script /usr/local/bin/oraenv alla riga 225 (ma anche qui risolveremo il singlo script, e non eventuali altri lanciati a catena, se esistono) da:
 
 if [ ${ORACLE_BASE:-"x"} == "x" ]; then
 
@@ -94,25 +88,21 @@ Una volta dentro a sqlplus, al prompt SQL> :
 - per uscire scrivere: EXIT;
 
 Per creare nuove istanze di database, una volta dentro a sqlplus:
-
 {% highlight sql %}
 SQL> create user NOME_DB identified by PASSWORD;
 {% endhighlight %}
 
 Se dovesse rispondere con:
-
 {% highlight sql %}
 ORA-65096: invalid common user or role name in oracle
 {% endhighlight %}
 
 Allora eseguire:
-
 {% highlight sql %}
 SQL> alter session set "_ORACLE_SCRIPT"=true;
 {% endhighlight %}
 
 Poi dare le grant, ad esempio:
-
 {% highlight sql %}
 SQL> grant all privileges to NOME_DB;
 {% endhighlight %}
